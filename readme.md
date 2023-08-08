@@ -3,10 +3,16 @@ WIP to for working with KiCad footprints
 
 So far this repo consists of:
 - Sample KiCad data for testing and development
-- Stubs for testing in Node.js
+- Fetch footprints from URL
+- Tests for everything that it can do so far
+
+## development
+Install dependencies: `npm ci`
+
+Run tests: `npm test`
 
 ### To do:
-- Fetch and parse KiCad 7 Footprints (we can fetch them, but… so can curl)
+- Parse KiCad 7 Footprints
 - Dump internal representation of KiCad Footprint to json/yaml
 - Dump internal representation of KiCad Footprint back to KiCad S-expr
 - Test loading files in a web browser, with a trivial client side app
