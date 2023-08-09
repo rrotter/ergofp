@@ -4,7 +4,8 @@
   "description": "parse, modify, and write kicad footprints",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test.js"
+    "test": "mocha test.js",
+    "nearleyc": "nearleyc sexpr.nc > sexpr.js"
   },
   "keywords": [
     "kicad"

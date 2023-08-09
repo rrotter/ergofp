@@ -5,11 +5,13 @@ So far this repo consists of:
 - Sample KiCad data for testing and development
 - Fetch footprints from URL
 - Tests for everything that it can do so far
+- Parser for KiCad s-expression
 
 ## development
 Install dependencies: `npm ci`
 
 Run tests: `npm test`
+Compile sexpr parser: `npm run nearleyc`
 
 ### To do:
 - Parse KiCad 7 Footprints
