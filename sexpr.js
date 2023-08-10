@@ -5,14 +5,20 @@ function id(x) { return x[0]; }
 
   const moo = require("moo")
   const lexer = moo.compile({
-    qword: {match: /"[^"]*"/, value: x => x.slice(1,-1)},
+    // quoted word ends with the first " NOT preceded by a backslash
+    //   - no newlines (\n or \r)
+    qword: {match: /"(?:[^"\n\r\\]|\\[^\n\r])*"/, value: x => x.slice(1,-1)},
+    // keyword opens an s-expression
+    //   - we grab the '(' as part of kword to reduce ambiguity
+    //   - all known keywords are lower case
     kword: {match: /\(\s*[a-z0-9_]+\b/, value: x => x.slice(1).trim()},
     rp: ")",
     ws: {match: /\s+/, lineBreaks: true},
     uuid: /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/,
+    // max 6 places right of decimal
     decimal: /\b-?\d+\.\d{1,6}\b/,
     int: /\b-?\d+\b/,
-    word:  /[a-zA-Z0-9\-\._]+/,
+    word: /[a-zA-Z0-9\-\._]+/,
   });
 var grammar = {
     Lexer: lexer,
