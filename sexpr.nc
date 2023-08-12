@@ -4,7 +4,7 @@
   const lexer = moo.compile({
     // quoted word ends with the first " NOT preceded by a backslash
     //   - no newlines (\n or \r)
-    qword: {match: /"(?:[^"\n\r\\]|\\[^\n\r])*"/, value: x => x.slice(1,-1)},
+    qword: {match: /"(?:[^"\n\r\\]|\\[^\n\r])*"/},
     // keyword opens an s-expression
     //   - we grab the '(' as part of kword to reduce ambiguity
     //   - all known keywords are lower case
