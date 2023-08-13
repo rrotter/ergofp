@@ -74,13 +74,13 @@ describe('parseLibName()', function() {
   })
   it('find lib and name from url', function() {
     let obj = parseLibName("https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod")
-    expect(obj.name).to.equal("whatever")
-    expect(obj.lib).to.equal("some_fp_collection")
+    obj.name.should.equal("whatever")
+    obj.lib.should.equal("some_fp_collection")
   })
   it('find lib and name from local path', function() {
     let obj = parseLibName("/any/local/path/another_fp_collection.pretty/some_footprint.kicad_mod")
-    expect(obj.name).to.equal("some_footprint")
-    expect(obj.lib).to.equal("another_fp_collection")
+    obj.name.should.equal("some_footprint")
+    obj.lib.should.equal("another_fp_collection")
   })
   it('find nothing', function() {
     let obj = parseLibName("https://example.com/any/some_fp_collection.pretty/whatever.kicad_mode")
@@ -92,46 +92,46 @@ describe('parseLibName()', function() {
 describe('Footprint', function() {
   before(async function () {
     this.footprint_string = await readFile('fixtures/sample/footprints.pretty/smd_simple_sample.kicad_mod', 'utf8')
-    this.mod = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod")
+    this.footprint = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod")
   })
 
   it('is a footprint', function() {
-    expect(this.mod).to.be.an.instanceof(Footprint)
+    this.footprint.should.be.an.instanceof(Footprint)
   })
   it('has expected content', function() {
-    this.mod.toString().should.match(/footprint/)
-    this.mod.toString().should.match(/smd_simple_sample/)
-    this.mod.toString().should.match(/\(attr smd\)/)
+    this.footprint.toString().should.match(/footprint/)
+    this.footprint.toString().should.match(/smd_simple_sample/)
+    this.footprint.toString().should.match(/\(attr smd\)/)
   })
   it('get names from src', function() {
-    expect(this.mod.name).to.equal("whatever")
-    expect(this.mod.lib).to.equal("some_fp_collection")
+    this.footprint.name.should.equal("whatever")
+    this.footprint.lib.should.equal("some_fp_collection")
   })
   it('use supplied names', function() {
-    let mod = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod","bar","baz")
-    expect(mod.name).to.equal("bar")
-    expect(mod.lib).to.equal("baz")
+    let footprint = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod","bar","baz")
+    footprint.name.should.equal("bar")
+    footprint.lib.should.equal("baz")
   })
 })
 
 describe('fetchFootprint', function() {
   it('fetches string data from url', async function() {
-    let mod = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
-    mod.toString().should.match(/footprint/)
-    mod.toString().should.match(/smd_simple_sample/)
+    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
+    footprint.toString().should.match(/footprint/)
+    footprint.toString().should.match(/smd_simple_sample/)
   })
   it('names object correctly', async function() {
-    let mod = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
-    expect(mod.name).to.equal("smd")
-    expect(mod.lib).to.equal("footprints")
+    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
+    footprint.name.should.equal("smd")
+    footprint.lib.should.equal("footprints")
 
-    let mod_with_name_from_param = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod","foo","bar")
-    expect(mod_with_name_from_param.name).to.equal("foo")
-    expect(mod_with_name_from_param.lib).to.equal("bar")
+    let footprint_with_name_from_param = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod","foo","bar")
+    footprint_with_name_from_param.name.should.equal("foo")
+    footprint_with_name_from_param.lib.should.equal("bar")
   })
   it('returns a Footprint object', async function() {
-    let mod = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
-    expect(mod).to.be.an.instanceof(Footprint)
+    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
+    footprint.should.be.an.instanceof(Footprint)
   })
 })
 
