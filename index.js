@@ -70,32 +70,50 @@ class SExpression {
     this._tree = clean_tree(raw_tree)
   }
 
+  _validate_type (expected) {
+    if (this.type() != expected) {
+      throw new Error(`root sexpr for class ${this.constructor.name} must be \"footprint\", not \"${this.type()}\"`)
+    }
+  }
+
   toString () {
     return tree_to_string(this._tree)
+  }
+
+  type () {
+    return this._tree.op
   }
 }
 
 // factory for Footprint obj at _url_
-async function fetchFootprint(url, library, fp_name) {
+async function fetchFootprint(url) {
   txt = await fetch_text(url)
-  return new Footprint(txt, url, library, fp_name)
+  let pp = parseLibName(url)
+  return new Footprint(txt, url, pp.lib)
 }
 
 // wrapper for .kicad_mod file
 // handles Footprint metadata (name, lib, src)
 class Footprint extends SExpression {
-  constructor (str, src = '', fp_name, lib) {
+  constructor (str, src = '', lib) {
     super(str)
 
     this.lib = lib
-    this.name = fp_name
-    let pp = parseLibName(src)
-    if (! this.name) {
-      this.name = pp.name
-    }
     if (! this.lib) {
+      let pp = parseLibName(src)
       this.lib = pp.lib
     }
+
+    // validate tree
+    this._validate_type("footprint")
+
+    // get name
+    let quoted_name = this._tree.args[0]
+    this.name = quoted_name.replace(/^"(.*)"$/,'$1')
+  }
+
+  name () {
+    return this._tree.args[0]
   }
 }
 

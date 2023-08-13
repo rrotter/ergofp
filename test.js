@@ -28,10 +28,10 @@ const server = http.createServer((req, res) => {
   let match = path.match(/^\/footprints\.pretty\/(\w+)/)
   if (match) {
     fp = match[1]
-    if (fp == 'th') {
+    if (fp == 'th_sample_footprint') {
       message = footprint_samples.th
     }
-    else if (fp == 'smd') {
+    else if (fp == 'smd_sample_footprint') {
       message = footprint_samples.smd 
     }
     else {
@@ -61,7 +61,7 @@ describe('fetch_text()', function() {
     txt.should.equal("Hello World\n")
   })
   it('fetch long string over http', async function() {
-    let txt = await fetch_text('http://localhost:9876/footprints.pretty/smd.kicad_mod')
+    let txt = await fetch_text('http://localhost:9876/footprints.pretty/smd_sample_footprint.kicad_mod')
     txt.should.equal(footprint_samples.smd)
   })
 })
@@ -95,8 +95,11 @@ describe('Footprint', function() {
     this.footprint = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod")
   })
 
-  it('is a footprint', function() {
+  it('is a Footprint', function() {
     this.footprint.should.be.an.instanceof(Footprint)
+  })
+  it('inherits from SExpression', function() {
+    this.footprint.should.be.an.instanceof(SExpression)
   })
   it('has expected content', function() {
     this.footprint.toString().should.match(/footprint/)
@@ -104,33 +107,29 @@ describe('Footprint', function() {
     this.footprint.toString().should.match(/\(attr smd\)/)
   })
   it('get names from src', function() {
-    this.footprint.name.should.equal("whatever")
+    this.footprint.name.should.equal("smd_simple_sample")
     this.footprint.lib.should.equal("some_fp_collection")
   })
   it('use supplied names', function() {
-    let footprint = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod","bar","baz")
-    footprint.name.should.equal("bar")
+    let footprint = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod","baz")
+    // footprint.name.should.equal("bar")
     footprint.lib.should.equal("baz")
   })
 })
 
 describe('fetchFootprint', function() {
   it('fetches string data from url', async function() {
-    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
+    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd_sample_footprint.kicad_mod")
     footprint.toString().should.match(/footprint/)
     footprint.toString().should.match(/smd_simple_sample/)
   })
   it('names object correctly', async function() {
-    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
-    footprint.name.should.equal("smd")
+    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd_sample_footprint.kicad_mod")
+    footprint.name.should.equal("smd_sample_footprint")
     footprint.lib.should.equal("footprints")
-
-    let footprint_with_name_from_param = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod","foo","bar")
-    footprint_with_name_from_param.name.should.equal("foo")
-    footprint_with_name_from_param.lib.should.equal("bar")
   })
   it('returns a Footprint object', async function() {
-    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd.kicad_mod")
+    let footprint = await fetchFootprint("http://localhost:9876/footprints.pretty/smd_sample_footprint.kicad_mod")
     footprint.should.be.an.instanceof(Footprint)
   })
 })
@@ -138,15 +137,24 @@ describe('fetchFootprint', function() {
 describe('SExpression', function() {
   before(async function() {
     let pcb_str = await readFile('fixtures/sample/sample.kicad_pcb', 'utf8')
+    let fp_str = await readFile('fixtures/sample/footprints.pretty/smd_simple_sample.kicad_mod', 'utf8')
     this.pcb = new SExpression(pcb_str)
+    this.fp = new SExpression(fp_str)
   })
 
   it('parses input string', function() {
     let sexpr = new SExpression("(this (is actually) (a valid) SExpression (with SoooperSecretData))")
     sexpr.toString().should.match(/\(with\s+SoooperSecretData\s*\)/)
   })
-  it('parses sample .kicad_pcb file', function() {
+  it('parses sample files', function() {
     this.pcb.toString().should.match(/kicad_pcb/)
     this.pcb.toString().should.match(/Project Footprints\:smd_simple_sample/)
+    this.fp.toString().should.match(/smd_simple_sample/)
+    this.fp.toString().should.match(/footprint/)
+    this.fp.toString().should.match(/smd roundrect/)
+  })
+  it('gets type of sample files', function() {
+    this.pcb.type().should.equal("kicad_pcb")
+    this.fp.type().should.equal("footprint")
   })
 })

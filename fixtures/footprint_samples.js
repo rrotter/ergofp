@@ -1,4 +1,4 @@
-const smd = `(footprint "smd_simple_sample" (version 20221018) (generator pcbnew)
+const smd = `(footprint "smd_sample_footprint" (version 20221018) (generator pcbnew)
   (layer "F.Cu")
   (attr smd)
   (fp_text reference "REF**" (at 0 -0.5 unlocked) (layer "F.SilkS")
@@ -29,7 +29,7 @@ const smd = `(footprint "smd_simple_sample" (version 20221018) (generator pcbnew
 )
 `
 
-const th = `(footprint "th_simple_sample" (version 20221018) (generator pcbnew)
+const th = `(footprint "th_sample_footprint" (version 20221018) (generator pcbnew)
   (layer "F.Cu")
   (attr through_hole)
   (fp_text reference "REF**" (at 0 -0.5 unlocked) (layer "F.SilkS")
