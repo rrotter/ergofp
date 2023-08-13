@@ -21,59 +21,88 @@ function parseLibName(src) {
   return r
 }
 
-// wrapper for .kicad_mod file
-// handles Footprint metadata (name, lib, src)
-const KiCadMod = function (str, src = '', fp_name, lib) {
-  this._str = str
-  this.lib = lib
-  this.name = fp_name
-  pp = parseLibName(src)
-  if (! this.name) {
-    this.name = pp.name
+const join_with_space = [
+  "general",
+  "fp_line","fp_rect","fp_text","gr_arc","gr_line","stroke",
+  "effects","font","model","offset","scale","rotate",
+  "pad","model",
+]
+function tree_to_string(obj) {
+  var toks = [obj.op]
+  var contains_sexp = 0
+  obj.args.forEach((arg) => {
+    if(arg.op) {
+      toks.push(tree_to_string(arg).replace(/\n/g, "\n  "))
+      contains_sexp++
+    } else {
+      toks.push(arg)
+    }
+  })
+  // don't add newline if this sexp contains no nested sexps, or is on list above
+  if(contains_sexp==0 || join_with_space.includes(obj.op)) {
+    return `(${toks.join(' ')})`
+  } else {
+    return `(${toks.join("\n  ")}\n)`
   }
-  if (! this.lib) {
-    this.lib = pp.lib
-  }
-}
-KiCadMod.prototype.toString = function () {
-  return this._str
 }
 
-// factory for KiCadMod obj at _url_
-async function fetchKiCadMod(url, library, fp_name) {
-  txt = await fetch_text(url)
-  return new KiCadMod(txt, url, library, fp_name)
-}
-
-// This is meant to parse the footprint and contain the an internal representation of it
-// wip...
-const Footprint = function (kicadmod) {
-  this._kicadmod = kicadmod
-  this._tree = undefined
-}
-Footprint.prototype.tree = function () {
-  if (! this._tree) {
-    this._tree = this._generate_tree()
-  }
-  return this._tree
-}
-Footprint.prototype._generate_tree = function () {
-  let tree = {}
-  str = this._kicadmod.toString()
+function clean_tree(obj) {
+  var tree = {}
+  tree.op = obj.op.value
+  tree.args = []
+  obj.args.forEach((arg) => {
+    if(arg.op) {
+      tree.args.push(clean_tree(arg))
+    } else {
+      tree.args.push(arg.value)
+    }
+  })
   return tree
+}
+
+class SExpression {
+  constructor (str) {
+    let parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+    parser.feed(str)
+    console.assert(parser.results.length == 1, parser.results)
+    let raw_tree = parser.results[0]
+
+    this._tree = clean_tree(raw_tree)
+  }
+
+  toString () {
+    return tree_to_string(this._tree)
+  }
 }
 
 // factory for Footprint obj at _url_
 async function fetchFootprint(url, library, fp_name) {
-  mod = await fetchKiCadMod(url, library, fp_name)
-  return new Footprint(mod)
+  txt = await fetch_text(url)
+  return new Footprint(txt, url, library, fp_name)
+}
+
+// wrapper for .kicad_mod file
+// handles Footprint metadata (name, lib, src)
+class Footprint extends SExpression {
+  constructor (str, src = '', fp_name, lib) {
+    super(str)
+
+    this.lib = lib
+    this.name = fp_name
+    let pp = parseLibName(src)
+    if (! this.name) {
+      this.name = pp.name
+    }
+    if (! this.lib) {
+      this.lib = pp.lib
+    }
+  }
 }
 
 module.exports = {
   fetch_text,
   parseLibName,
-  KiCadMod,
-  fetchKiCadMod,
   Footprint,
   fetchFootprint,
+  SExpression,
 }

@@ -12,7 +12,12 @@ So far this repo consists of:
 Install dependencies: `npm ci`
 
 Run tests: `npm test`
+
 Compile sexpr parser: `npm run nearleyc`
+
+Test s-expression parsing pipeline:
+- `./demo.js fixtures/sample/footprints.pretty/th_simple_sample.kicad_mod`
+- `./demo.js fixtures/sample/sample.kicad_pcb`
 
 ### To do:
 - object representation of s-expressions, footprints
