@@ -7,7 +7,7 @@ async function main() {
   var path = process.argv[2]  
   var str = await readFile(path, 'utf8')
 
-  sexpr = new SExpression(str)
+  sexpr = SExpression.fromString(str)
   console.log(sexpr.toString()) // output kicad compatible sexp!
 }
 

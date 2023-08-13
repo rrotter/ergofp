@@ -92,7 +92,7 @@ describe('parseLibName()', function() {
 describe('Footprint', function() {
   before(async function () {
     this.footprint_string = await readFile('fixtures/sample/footprints.pretty/smd_simple_sample.kicad_mod', 'utf8')
-    this.footprint = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod")
+    this.footprint = SExpression.fromString(this.footprint_string,"some_fp_collection")
   })
 
   it('is a Footprint', function() {
@@ -106,14 +106,11 @@ describe('Footprint', function() {
     this.footprint.toString().should.match(/smd_simple_sample/)
     this.footprint.toString().should.match(/\(attr smd\)/)
   })
-  it('get names from src', function() {
+  it('knows its name', function() {
     this.footprint.name.should.equal("smd_simple_sample")
-    this.footprint.lib.should.equal("some_fp_collection")
   })
-  it('use supplied names', function() {
-    let footprint = new Footprint(this.footprint_string,"https://example.com/any/some_fp_collection.pretty/whatever.kicad_mod","baz")
-    // footprint.name.should.equal("bar")
-    footprint.lib.should.equal("baz")
+  it('use supplied lib name', function() {
+    this.footprint.lib.should.equal("some_fp_collection")
   })
 })
 
@@ -138,12 +135,12 @@ describe('SExpression', function() {
   before(async function() {
     let pcb_str = await readFile('fixtures/sample/sample.kicad_pcb', 'utf8')
     let fp_str = await readFile('fixtures/sample/footprints.pretty/smd_simple_sample.kicad_mod', 'utf8')
-    this.pcb = new SExpression(pcb_str)
-    this.fp = new SExpression(fp_str)
+    this.pcb = SExpression.fromString(pcb_str)
+    this.fp = SExpression.fromString(fp_str)
   })
 
   it('parses input string', function() {
-    let sexpr = new SExpression("(this (is actually) (a valid) SExpression (with SoooperSecretData))")
+    let sexpr = SExpression.fromString("(this (is actually) (a valid) SExpression (with SoooperSecretData))")
     sexpr.toString().should.match(/\(with\s+SoooperSecretData\s*\)/)
   })
   it('parses sample files', function() {
@@ -156,5 +153,11 @@ describe('SExpression', function() {
   it('gets type of sample files', function() {
     this.pcb.type().should.equal("kicad_pcb")
     this.fp.type().should.equal("footprint")
+  })
+  it('creates objects of correct class', function() {
+    this.pcb.should.be.an.instanceof(SExpression)
+    this.pcb.should.not.be.an.instanceof(Footprint)
+    this.fp.should.be.an.instanceof(SExpression)
+    this.fp.should.be.an.instanceof(Footprint)
   })
 })

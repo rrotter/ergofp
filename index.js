@@ -61,13 +61,23 @@ function clean_tree(obj) {
 }
 
 class SExpression {
-  constructor (str) {
+  static fromTree (tree, meta) {
+    let op = tree.op
+
+    if (this.subClasses[op]) {
+      return new this.subClasses[op](tree, meta)
+    }
+    return new SExpression(tree)
+  }
+  static fromString (str, meta) {
     let parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
     parser.feed(str)
     console.assert(parser.results.length == 1, parser.results)
-    let raw_tree = parser.results[0]
-
-    this._tree = clean_tree(raw_tree)
+    let tree = clean_tree(parser.results[0])
+    return SExpression.fromTree(tree, meta)
+  }
+  constructor (tree) {
+    this._tree = tree
   }
 
   _validate_type (expected) {
@@ -89,20 +99,15 @@ class SExpression {
 async function fetchFootprint(url) {
   txt = await fetch_text(url)
   let pp = parseLibName(url)
-  return new Footprint(txt, url, pp.lib)
+  return Footprint.fromString(txt, pp.lib)
 }
 
 // wrapper for .kicad_mod file
-// handles Footprint metadata (name, lib, src)
 class Footprint extends SExpression {
-  constructor (str, src = '', lib) {
+  constructor (str, lib) {
     super(str)
 
     this.lib = lib
-    if (! this.lib) {
-      let pp = parseLibName(src)
-      this.lib = pp.lib
-    }
 
     // validate tree
     this._validate_type("footprint")
@@ -115,6 +120,10 @@ class Footprint extends SExpression {
   name () {
     return this._tree.args[0]
   }
+}
+
+SExpression.subClasses = {
+  'footprint': Footprint
 }
 
 module.exports = {
