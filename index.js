@@ -1,3 +1,6 @@
+const nearley = require("nearley");
+const grammar = require("./grammar.js");
+
 async function fetch_text(url) {
   resp = await fetch(url)
   if (resp.status != 200) {

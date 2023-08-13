@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha test.js",
-    "nearleyc": "nearleyc sexpr.nc > sexpr.js"
+    "nearleyc": "nearleyc grammar.nc > grammar.js"
   },
   "keywords": [
     "kicad"
