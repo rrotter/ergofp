@@ -1,5 +1,5 @@
 ## ergofp
-Parses any KiCad s-expression into a object tree for practiacal manipulation.
+Parses any KiCad s-expression into an object tree for practical manipulation.
 
 ## development
 Install dependencies: `npm ci`
