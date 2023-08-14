@@ -18,7 +18,7 @@ function id(x) { return x[0]; }
     // max 6 places right of decimal
     decimal: /\b-?\d+\.\d{1,6}\b/,
     int: /\b-?\d+\b/,
-    word: /[a-zA-Z0-9\-\._]+/,
+    word: /[a-zA-Z0-9._-]+/,
   });
 var grammar = {
     Lexer: lexer,

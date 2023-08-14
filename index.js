@@ -1,9 +1,9 @@
-const nearley = require("nearley");
-const grammar = require("./grammar.js");
+const nearley = require('nearley')
+const grammar = require('./grammar.js')
 
-async function fetch_text(url) {
-  resp = await fetch(url)
-  if (resp.status != 200) {
+async function fetchText (url) {
+  const resp = await fetch(url)
+  if (resp.status !== 200) {
     throw new Error(`fetch of ${resp.url} failed with ${resp.status}`)
   } else {
     return await resp.text()
@@ -11,48 +11,48 @@ async function fetch_text(url) {
 }
 
 // get the name of KiCad library and footprint from a path
-function parseLibName(src) {
-  m = src.match(/(?:\/([A-Za-z0-9\-_]+)\.pretty)?\/([A-Za-z0-9\-_]+).kicad_mod$/)
-  r = {lib: undefined, name: undefined}
-  if (m) {
-    r.lib = m[1]
-    r.name = m[2]
+function parseLibName (src) {
+  const match = src.match(/(?:\/([A-Za-z0-9\-_]+)\.pretty)?\/([A-Za-z0-9\-_]+).kicad_mod$/)
+  const ret = { lib: undefined, name: undefined }
+  if (match) {
+    ret.lib = match[1]
+    ret.name = match[2]
   }
-  return r
+  return ret
 }
 
-const join_with_space = [
-  "general",
-  "fp_line","fp_rect","fp_text","gr_arc","gr_line","stroke",
-  "effects","font","model","offset","scale","rotate",
-  "pad","model",
+const joinWithSpace = [
+  'general',
+  'fp_line', 'fp_rect', 'fp_text', 'gr_arc', 'gr_line', 'stroke',
+  'effects', 'font', 'model', 'offset', 'scale', 'rotate',
+  'pad', 'model'
 ]
-function tree_to_string(obj) {
-  var toks = [obj.op]
-  var contains_sexp = 0
+function treeToString (obj) {
+  const toks = [obj.op]
+  let containsSExpr = 0
   obj.args.forEach((arg) => {
-    if(arg.op) {
-      toks.push(tree_to_string(arg).replace(/\n/g, "\n  "))
-      contains_sexp++
+    if (arg.op) {
+      toks.push(treeToString(arg).replace(/\n/g, '\n  '))
+      containsSExpr++
     } else {
       toks.push(arg)
     }
   })
   // don't add newline if this sexp contains no nested sexps, or is on list above
-  if(contains_sexp==0 || join_with_space.includes(obj.op)) {
+  if (containsSExpr === 0 || joinWithSpace.includes(obj.op)) {
     return `(${toks.join(' ')})`
   } else {
-    return `(${toks.join("\n  ")}\n)`
+    return `(${toks.join('\n  ')}\n)`
   }
 }
 
-function clean_tree(obj) {
-  var tree = {}
+function cleanTree (obj) {
+  const tree = {}
   tree.op = obj.op.value
   tree.args = []
   obj.args.forEach((arg) => {
-    if(arg.op) {
-      tree.args.push(clean_tree(arg))
+    if (arg.op) {
+      tree.args.push(cleanTree(arg))
     } else {
       tree.args.push(arg.value)
     }
@@ -62,32 +62,34 @@ function clean_tree(obj) {
 
 class SExpression {
   static fromTree (tree, meta) {
-    let op = tree.op
+    const op = tree.op
 
     if (this.subClasses[op]) {
       return new this.subClasses[op](tree, meta)
     }
     return new SExpression(tree)
   }
+
   static fromString (str, meta) {
-    let parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar));
+    const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar))
     parser.feed(str)
-    console.assert(parser.results.length == 1, parser.results)
-    let tree = clean_tree(parser.results[0])
+    console.assert(parser.results.length === 1, parser.results)
+    const tree = cleanTree(parser.results[0])
     return SExpression.fromTree(tree, meta)
   }
+
   constructor (tree) {
     this._tree = tree
   }
 
   _validate_type (expected) {
-    if (this.type() != expected) {
-      throw new Error(`root sexpr for class ${this.constructor.name} must be \"footprint\", not \"${this.type()}\"`)
+    if (this.type() !== expected) {
+      throw new Error(`root sexpr for class ${this.constructor.name} must be "footprint", not "${this.type()}"`)
     }
   }
 
   toString () {
-    return tree_to_string(this._tree)
+    return treeToString(this._tree)
   }
 
   type () {
@@ -96,9 +98,9 @@ class SExpression {
 }
 
 // factory for Footprint obj at _url_
-async function fetchFootprint(url) {
-  txt = await fetch_text(url)
-  let pp = parseLibName(url)
+async function fetchFootprint (url) {
+  const txt = await fetchText(url)
+  const pp = parseLibName(url)
   return Footprint.fromString(txt, pp.lib)
 }
 
@@ -110,11 +112,11 @@ class Footprint extends SExpression {
     this.lib = lib
 
     // validate tree
-    this._validate_type("footprint")
+    this._validate_type('footprint')
 
     // get name
-    let quoted_name = this._tree.args[0]
-    this.name = quoted_name.replace(/^"(.*)"$/,'$1')
+    const quotedName = this._tree.args[0]
+    this.name = quotedName.replace(/^"(.*)"$/, '$1')
   }
 
   name () {
@@ -123,13 +125,13 @@ class Footprint extends SExpression {
 }
 
 SExpression.subClasses = {
-  'footprint': Footprint
+  footprint: Footprint
 }
 
 module.exports = {
-  fetch_text,
+  fetchText,
   parseLibName,
   Footprint,
   fetchFootprint,
-  SExpression,
+  SExpression
 }

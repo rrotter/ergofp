@@ -4,8 +4,11 @@
   "description": "parse, modify, and write kicad footprints",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test.js",
-    "nearleyc": "nearleyc grammar.nc > grammar.js"
+    "nearleyc": "nearleyc grammar.nc > grammar.js",
+    "lint": "standard",
+    "lint:fix": "standard --fix",
+    "test": "mocha",
+    "test:watch": "mocha --watch"
   },
   "keywords": [
     "kicad"
@@ -14,10 +17,14 @@
   "license": "MIT",
   "devDependencies": {
     "chai": "^4.3.7",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "standard": "^17.1.0"
   },
   "dependencies": {
     "moo": "^0.5.2",
     "nearley": "^2.20.1"
+  },
+  "standard": {
+    "ignore": ["grammar.js"]
   }
 }

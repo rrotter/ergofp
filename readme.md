@@ -6,6 +6,8 @@ Install dependencies: `npm ci`
 
 Run tests: `npm test`
 
+Lint: `npx run lint[:fix]`
+
 Compile sexpr parser: `npm run nearleyc`
 
 Test s-expression parsing pipeline:
